@@ -1,3 +1,4 @@
 secrets/*.txt
 !secrets/*.txt.example
 !secrets/credentials.txt
+srcs/.env
