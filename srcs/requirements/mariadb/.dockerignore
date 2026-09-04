@@ -1,0 +1,4 @@
+.env
+*.txt
+.DS_Store
+.git
