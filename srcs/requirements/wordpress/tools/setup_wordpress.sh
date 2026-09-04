@@ -1,12 +1,6 @@
 #!/bin/bash
 set -e
 
-# wait for MariaDB service
-until mariadb-admin ping -h"mariadb" --silent; do
-	echo "Waiting for MariaDB connection..."
-	sleep 2
-done
-
 # load secrets
 if [ -f /run/secrets/db_password ]; then
 	MYSQL_PW=$(cat /run/secrets/db_password)
@@ -19,6 +13,12 @@ fi
 if [ -f /run/secrets/wp_user_password ]; then
 	WP_USER_PW=$(cat /run/secrets/wp_user_password)
 fi
+
+# wait for MariaDB service
+until mariadb-admin ping -h"mariadb" --silent; do
+	echo "Waiting for MariaDB connection..."
+	sleep 2
+done
 
 cd /var/www/html
 

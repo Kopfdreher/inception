@@ -1,0 +1,79 @@
+diff --git a/secrets/db_password.txt.example b/secrets/db_password.txt.example
+deleted file mode 100644
+index 0794572..0000000
+--- a/secrets/db_password.txt.example
++++ /dev/null
+@@ -1 +0,0 @@
+-your_db_user_passsword
+diff --git a/secrets/db_root_password.txt.example b/secrets/db_root_password.txt.example
+deleted file mode 100644
+index 0e1c330..0000000
+--- a/secrets/db_root_password.txt.example
++++ /dev/null
+@@ -1 +0,0 @@
+-your_db_root_password
+diff --git a/secrets/wp_admin_password.txt.example b/secrets/wp_admin_password.txt.example
+deleted file mode 100644
+index 3936762..0000000
+--- a/secrets/wp_admin_password.txt.example
++++ /dev/null
+@@ -1 +0,0 @@
+-your_wp_admin_password
+diff --git a/secrets/wp_user_password.txt.example b/secrets/wp_user_password.txt.example
+deleted file mode 100644
+index b4d1f7f..0000000
+--- a/secrets/wp_user_password.txt.example
++++ /dev/null
+@@ -1 +0,0 @@
+-your_wp_user_password
+diff --git a/srcs/.env.example b/srcs/.env.example
+deleted file mode 100644
+index eac976d..0000000
+--- a/srcs/.env.example
++++ /dev/null
+@@ -1,7 +0,0 @@
+-LOGIN=your_login
+-DOMAIN_NAME=your_login.42.fr
+-MYSQL_DATABASE=wordpress_db
+-MYSQL_USER=wp_user
+-WP_TITLE=Inception_Site
+-WP_ADMIN_USER=site_owner
+-WP_USER=regular_user
+diff --git a/srcs/requirements/wordpress/tools/setup_wordpress.sh b/srcs/requirements/wordpress/tools/setup_wordpress.sh
+index 8dcf090..7cbc8da 100755
+--- a/srcs/requirements/wordpress/tools/setup_wordpress.sh
++++ b/srcs/requirements/wordpress/tools/setup_wordpress.sh
+@@ -1,12 +1,6 @@
+ #!/bin/bash
+ set -e
+ 
+-# wait for MariaDB service
+-until mariadb-admin ping -h"mariadb" --silent; do
+-	echo "Waiting for MariaDB connection..."
+-	sleep 2
+-done
+-
+ # load secrets
+ if [ -f /run/secrets/db_password ]; then
+ 	MYSQL_PW=$(cat /run/secrets/db_password)
+@@ -20,6 +14,12 @@ if [ -f /run/secrets/wp_user_password ]; then
+ 	WP_USER_PW=$(cat /run/secrets/wp_user_password)
+ fi
+ 
++# wait for MariaDB service
++until mariadb-admin ping -h"mariadb" --silent; do
++	echo "Waiting for MariaDB connection..."
++	sleep 2
++done
++
+ cd /var/www/html
+ 
+ # run WP init if wp-config.php is missing
+@@ -53,7 +53,6 @@ if [ ! -f wp-config.php ]; then
+ 
+ 	chown -R www-data:www-data /var/www/html
+ fi
+-
+ mkdir -p /run/php
+ 
+ # start php-fpm as PID 1
