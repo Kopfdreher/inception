@@ -17,7 +17,7 @@ if [ -f /run/secrets/wp_admin_password ]; then
 fi
 
 if [ -f /run/secrets/wp_user_password ]; then
-	WP_USER_PW=$(cat /run/secrets/wp_user_pass)
+	WP_USER_PW=$(cat /run/secrets/wp_user_password)
 fi
 
 cd /var/www/html
@@ -45,7 +45,7 @@ if [ ! -f wp-config.php ]; then
 
 	# second user
 	wp user create \
-		${WP_USER} \
+		"${WP_USER}" \
 		"user@${DOMAIN_NAME}" \
 		--role=author \
 		--user_pass=${WP_USER_PW} \
