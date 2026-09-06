@@ -19,9 +19,20 @@ AI was used for debugging and creating a roadmap for the implementation
 
 # Project Description
 
+Custom Debian bookworm images, one Dockerfile per service. Compose builds them, attaches `inception_net`, and mounts two named volumes.
+
 ### VMs vs Containers (Docker)
-- VM = fully virtualized guest OS 
-- Container = isolated processes, sharing the host kernel
+- VM = full guest OS behind a hypervisor.
+- Container = isolated process sharing the host kernel. Lighter and faster; less isolation than a VM. This project still runs inside a VM (42 requirement).
 
 ### Secrets vs env vars
-- .env
+- `.env` = non-secret config (domain, usernames, DB name).
+- Docker secrets = passwords, mounted at `/run/secrets/`. Never put passwords in Dockerfiles or git.
+
+### Docker network vs host network
+- User-defined bridge `inception_net`: containers reach each other by name (`wordpress:9000`, `mariadb:3306`). Only NGINX publishes 443.
+- `network: host` is forbidden: it would expose every container port on the VM.
+
+### Docker volumes vs bind mounts
+- Named volumes `mariadb_data` and `wordpress_data` (required).
+- `driver_opts` pin data to `/home/sgavrilo/data/...` so `docker volume inspect` shows that path. Compose bind mounts (`./dir:/dir`) are not used for these stores.
