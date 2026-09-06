@@ -3,19 +3,19 @@ set -e
 
 # load secrets
 if [ -f /run/secrets/db_password ]; then
-	MYSQL_PW=$(cat /run/secrets/db_password)
+	MYSQL_PW=$(cat /run/secrets/db_password | tr -d '\n')
 fi
 
 if [ -f /run/secrets/wp_admin_password ]; then
-	WP_ADMIN_PW=$(cat /run/secrets/wp_admin_password)
+	WP_ADMIN_PW=$(cat /run/secrets/wp_admin_password | tr -d '\n')
 fi
 
 if [ -f /run/secrets/wp_user_password ]; then
-	WP_USER_PW=$(cat /run/secrets/wp_user_password)
+	WP_USER_PW=$(cat /run/secrets/wp_user_password | tr -d '\n')
 fi
 
 # wait for MariaDB service
-until mariadb-admin ping -h"mariadb" --silent; do
+until mariadb -h"mariadb" -u"${MYSQL_USER}" -p"${MYSQL_PW}" --skip-ssl -e "SELECT 1" >/dev/null 2>&1; do
 	echo "Waiting for MariaDB connection..."
 	sleep 2
 done
@@ -48,7 +48,7 @@ if [ ! -f wp-config.php ]; then
 		"${WP_USER}" \
 		"user@${DOMAIN_NAME}" \
 		--role=author \
-		--user_pass=${WP_USER_PW} \
+		--user_pass="${WP_USER_PW}" \
 		--allow-root
 
 	chown -R www-data:www-data /var/www/html

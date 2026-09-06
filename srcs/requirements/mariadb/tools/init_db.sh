@@ -1,34 +1,34 @@
+exec mariadbd --user=mysql --console
 #!/bin/bash
 set -e
 
-# Load secrets from files into variables
 if [ -f /run/secrets/db_root_password ]; then
-	MYSQL_ROOT_PASSWORD=$(cat /run/secrets/db_root_password)
+	MYSQL_ROOT_PW=$(cat /run/secrets/db_root_password | tr -d '\n')
 fi
 
 if [ -f /run/secrets/db_password ]; then
-	MYSQL_PASSWORD=$(cat /run/secrets/db_password)
+	MYSQL_PW=$(cat /run/secrets/db_password | tr -d '\n')
 fi
 
-# Init data dir if db does not exit
+: "${MYSQL_DATABASE:?MYSQL_DATABASE is not set}"
+: "${MYSQL_USER:?MYSQL_USER is not set}"
+: "${MYSQL_PW:?MYSQL_PW is not set}"
+: "${MYSQL_ROOT_PW:?MYSQL_ROOT_PW is not set}"
+
 if [ ! -d "/var/lib/mysql/mysql" ]; then
 	mariadb-install-db --user=mysql --datadir=/var/lib/mysql > /dev/null
 
 	tmpfile=$(mktemp)
 	cat << EOF > "$tmpfile"
-USE mysql;
-FLUSH PRIVILEGES;
-ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
 CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;
-CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
+CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PW}';
 GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USER}'@'%';
+ALTER USER 'root'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('${MYSQL_ROOT_PW}');
 FLUSH PRIVILEGES;
 EOF
 
-	# Exec setup cmds in bootstrap mode without starting network daemon
 	mariadbd --user=mysql --bootstrap < "$tmpfile"
 	rm -f "$tmpfile"
 fi
 
-# Starting MariaDB as PID 1
 exec mariadbd --user=mysql --console
