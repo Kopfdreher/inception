@@ -22,6 +22,7 @@ if [ ! -d "/var/lib/mysql/mysql" ]; then
 
 	tmpfile=$(mktemp)
 	cat << EOF > "$tmpfile"
+FLUSH PRIVILEGES;
 CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;
 CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PW}';
 GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USER}'@'%';
