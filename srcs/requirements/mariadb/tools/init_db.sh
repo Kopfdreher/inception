@@ -1,6 +1,7 @@
-exec mariadbd --user=mysql --console
 #!/bin/bash
 set -e
+
+echo "[mariadb] starting init"
 
 if [ -f /run/secrets/db_root_password ]; then
 	MYSQL_ROOT_PW=$(cat /run/secrets/db_root_password | tr -d '\n')
@@ -16,7 +17,8 @@ fi
 : "${MYSQL_ROOT_PW:?MYSQL_ROOT_PW is not set}"
 
 if [ ! -d "/var/lib/mysql/mysql" ]; then
-	mariadb-install-db --user=mysql --datadir=/var/lib/mysql > /dev/null
+	echo "[mariadb] installing system tables"
+	mariadb-install-db --user=mysql --datadir=/var/lib/mysql
 
 	tmpfile=$(mktemp)
 	cat << EOF > "$tmpfile"
@@ -27,8 +29,13 @@ ALTER USER 'root'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWOR
 FLUSH PRIVILEGES;
 EOF
 
+	echo "[mariadb] running bootstrap SQL"
 	mariadbd --user=mysql --bootstrap < "$tmpfile"
 	rm -f "$tmpfile"
+	echo "[mariadb] bootstrap done"
+else
+	echo "[mariadb] data directory already exists, skipping init"
 fi
 
+echo "[mariadb] starting server"
 exec mariadbd --user=mysql --console
